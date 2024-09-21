@@ -1,34 +1,31 @@
+const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
 const {
   BAD_REQUEST,
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
 } = require("../utils/errors");
-const { isValidObjectId } = require("mongoose");
+const { isValidObjectId } = mongoose;
 
 // Controller to like a clothing item
 const likeItem = (req, res) => {
-  // Validate the itemId before proceeding
   if (!isValidObjectId(req.params.itemId)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
   }
 
-  ClothingItem.findByIdAndUpdate(
+  return ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $addToSet: { likes: req.user._id } }, // Add user ID to likes array if it's not already there
-    { new: true } // Return the updated document after the operation
+    { $addToSet: { likes: req.user._id } },
+    { new: true }
   )
-    .orFail(() => new Error("ItemNotFound")) // Throw error if item is not found
+    .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
     .catch((err) => {
-      console.error(err); // Log error for debugging
-
       if (err.message === "ItemNotFound") {
         return res
           .status(NOT_FOUND)
           .send({ message: "Clothing item not found" });
       }
-
       return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
@@ -37,27 +34,23 @@ const likeItem = (req, res) => {
 
 // Controller to unlike a clothing item
 const dislikeItem = (req, res) => {
-  // Validate the itemId before proceeding
   if (!isValidObjectId(req.params.itemId)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
   }
 
-  ClothingItem.findByIdAndUpdate(
+  return ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $pull: { likes: req.user._id } }, // Remove user ID from likes array
-    { new: true } // Return the updated document after the operation
+    { $pull: { likes: req.user._id } },
+    { new: true }
   )
-    .orFail(() => new Error("ItemNotFound")) // Throw error if item is not found
+    .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
     .catch((err) => {
-      console.error(err); // Log error for debugging
-
       if (err.message === "ItemNotFound") {
         return res
           .status(NOT_FOUND)
           .send({ message: "Clothing item not found" });
       }
-
       return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
@@ -66,10 +59,9 @@ const dislikeItem = (req, res) => {
 
 // Controller to get all clothing items
 const getClothingItems = (req, res) => {
-  ClothingItem.find({})
+  return ClothingItem.find({})
     .then((items) => res.send(items))
-    .catch((err) => {
-      console.error(err); // Log the error for debugging
+    .catch(() => {
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error occurred while fetching clothing items" });
@@ -78,17 +70,14 @@ const getClothingItems = (req, res) => {
 
 // Controller to get a single clothing item by ID
 const getClothingItem = (req, res) => {
-  // Validate the itemId before proceeding
   if (!isValidObjectId(req.params.itemId)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
   }
 
-  ClothingItem.findById(req.params.itemId)
-    .orFail(() => new Error("ItemNotFound")) // Use .orFail() to handle missing item
+  return ClothingItem.findById(req.params.itemId)
+    .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
     .catch((err) => {
-      console.error(err); // Log the error for debugging
-
       if (err.message === "ItemNotFound") {
         return res
           .status(NOT_FOUND)
@@ -103,35 +92,33 @@ const getClothingItem = (req, res) => {
 // Controller to create a new clothing item
 const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
-  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
+
+  return ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => res.status(201).send(item))
-    .catch((err) => {
-      console.error(err); // Log the error for debugging
-      res.status(BAD_REQUEST).send({
-        message: "Invalid data provided for creating a clothing item",
-      });
+    .catch(() => {
+      res
+        .status(BAD_REQUEST)
+        .send({
+          message: "Invalid data provided for creating a clothing item",
+        });
     });
 };
 
 // Controller to delete a clothing item by ID
 const deleteClothingItem = (req, res) => {
-  // Validate the itemId before proceeding
   if (!isValidObjectId(req.params.itemId)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
   }
 
-  ClothingItem.findByIdAndDelete(req.params.itemId)
-    .orFail(() => new Error("ItemNotFound")) // Throw an error if the item is not found
+  return ClothingItem.findByIdAndDelete(req.params.itemId)
+    .orFail(() => new Error("ItemNotFound"))
     .then(() => res.send({ message: "Clothing item deleted" }))
     .catch((err) => {
-      console.error(err); // Log the error for debugging
-
       if (err.message === "ItemNotFound") {
         return res
           .status(NOT_FOUND)
           .send({ message: "Clothing item not found" });
       }
-
       return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
@@ -140,7 +127,7 @@ const deleteClothingItem = (req, res) => {
 
 module.exports = {
   getClothingItems,
-  getClothingItem, // Export getClothingItem if you want to use it in routes
+  getClothingItem,
   createClothingItem,
   deleteClothingItem,
   likeItem,
