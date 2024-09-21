@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const { isURL } = require("validator"); // Add this line to fix the 'isURL' undefined issue
 
 const User = require("../models/user");
 
@@ -8,65 +8,54 @@ const {
   INTERNAL_SERVER_ERROR,
 } = require("../utils/errors");
 
-// Create a user
+// Create a user with validation for avatar URL
 const createUser = (req, res) => {
   const { name, avatar } = req.body;
 
-  if (!name || name.length < 2 || name.length > 30) {
-    return res.status(BAD_REQUEST).json({ message: "Invalid name length" });
-  }
-
   if (!avatar || typeof avatar !== "string" || !isURL(avatar)) {
-    return res.status(BAD_REQUEST).json({ message: "Invalid URL for avatar" });
+    return res.status(BAD_REQUEST).send({ message: "Invalid URL for avatar" });
   }
 
-  User.create({ name, avatar })
-    .then((user) => res.status(201).json(user))
+  return User.create({ name, avatar })
+    .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).json({
+        return res.status(BAD_REQUEST).send({
           message: "Invalid data provided for creating a user",
         });
       }
-      return res.status(INTERNAL_SERVER_ERROR).json({
+      return res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server",
       });
     });
 };
 
-// Get a user by ID
-const getUserById = (req, res) => {
-  const { userId } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(BAD_REQUEST).json({ message: "Invalid user ID" });
-  }
+// Get all users
+const getUsers = (req, res) =>
+  User.find({})
+    .then((users) => res.send(users))
+    .catch(() =>
+      res.status(INTERNAL_SERVER_ERROR).send({
+        message: "An error has occurred on the server",
+      })
+    );
 
-  User.findById(userId)
+// Get user by ID
+const getUserById = (req, res) =>
+  User.findById(req.params.id)
     .orFail(() => new Error("UserNotFound"))
-    .then((user) => res.json(user))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err.message === "UserNotFound") {
-        return res.status(NOT_FOUND).json({ message: "User not found" });
+        return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        message: "An error occurred on the server",
+      return res.status(INTERNAL_SERVER_ERROR).send({
+        message: "An error has occurred on the server",
       });
     });
-};
-
-// Get all users
-const getUsers = (req, res) => {
-  User.find()
-    .then((users) => res.json(users))
-    .catch(() =>
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .json({ message: "An error has occurred on the server" })
-    );
-};
 
 module.exports = {
+  createUser,
   getUsers,
   getUserById,
-  createUser,
 };
