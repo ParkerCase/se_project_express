@@ -12,8 +12,13 @@
   "author": "Parker Case",
   "license": "ISC",
   "dependencies": {
+    "@humanwhocodes/config-array": "^0.13.0",
+    "@humanwhocodes/object-schema": "^2.0.3",
     "express": "^4.21.0",
-    "mongoose": "^6.6.1"
+    "glob": "^11.0.0",
+    "mongoose": "^6.6.1",
+    "rimraf": "^6.0.1",
+    "validator": "^13.12.0"
   },
   "devDependencies": {
     "eslint": "^8.57.1",

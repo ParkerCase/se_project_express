@@ -7,21 +7,12 @@ const { NOT_FOUND } = require("./utils/errors");
 
 const app = express();
 
-app.use((req, res) => {
-  res.status(NOT_FOUND).send({ message: "Requested resource not found" });
-});
-
 const { PORT = 3001 } = process.env;
 
+// Middleware to parse JSON request bodies
 app.use(express.json());
-// Middleware to attach a hardcoded user ID to each request
-app.use((req, res, next) => {
-  req.user = {
-    _id: "5d8b8592978f8bd833ca8133",
-  };
-  next();
-});
 
+// Middleware to attach a hardcoded user ID to each request
 app.use((req, res, next) => {
   req.user = {
     _id: "66edfbf0fb0984ff3b0fdc16",
@@ -33,18 +24,34 @@ app.use((req, res, next) => {
 app.use("/users", usersRoutes);
 app.use("/items", clothingItemsRoutes);
 
+// Catch-all route for undefined routes
+app.use((req, res) => {
+  res.status(NOT_FOUND).send({ message: "Requested resource not found" });
+});
+
+// MongoDB connection
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log("Connected to MongoDB");
+    if (process.env.NODE_ENV !== "production") {
+      // Only log this message in development mode
+      console.log("Connected to MongoDB");
+    }
   })
   .catch((err) => {
-    console.error("Error connecting to MongoDB", err);
+    if (process.env.NODE_ENV !== "production") {
+      // Only log this message in development mode
+      console.error("Error connecting to MongoDB", err);
+    }
   });
 
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  if (process.env.NODE_ENV !== "production") {
+    // Only log this message in development mode
+    console.log(`Server is running on port ${PORT}`);
+  }
 });
