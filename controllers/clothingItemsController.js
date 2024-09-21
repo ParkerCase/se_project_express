@@ -92,7 +92,7 @@ const dislikeItem = (req, res) =>
 
 // Delete clothing item
 const deleteClothingItem = (req, res) =>
-  ClothingItem.findByIdAndRemove(req.params.id)
+  ClothingItem.findByIdAndDelete(req.params.id)
     .orFail(() => new Error("ItemNotFound"))
     .then(() => res.status(200).send({ message: "Item deleted" }))
     .catch((err) => {
