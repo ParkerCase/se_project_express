@@ -41,7 +41,7 @@ const getClothingItems = (req, res) =>
     );
 
 // Get clothing item by ID
-const getClothingItemById = (req, res) =>
+const getClothingItem = (req, res) =>
   ClothingItem.findById(req.params.id)
     .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
@@ -107,7 +107,7 @@ const deleteClothingItem = (req, res) =>
 module.exports = {
   createClothingItem,
   getClothingItems,
-  getClothingItemById,
+  getClothingItem,
   likeItem,
   dislikeItem,
   deleteClothingItem,
