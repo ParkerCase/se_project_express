@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const { isURL } = require("validator");
+
 const User = require("../models/user");
 
 const {
@@ -9,7 +10,7 @@ const {
   INTERNAL_SERVER_ERROR,
 } = require("../utils/errors");
 
-// Create a user with validation for avatar URL
+// Function to create a user with validation for avatar URL
 const createUser = (req, res) => {
   const { name, avatar } = req.body;
 
@@ -32,9 +33,19 @@ const createUser = (req, res) => {
     });
 };
 
-// Simplified arrow function without block statement
-const getUserById = (req, res) =>
-  User.findById(req.params.id)
+// Function to get all users
+const getUsers = (req, res) =>
+  User.find({})
+    .then((users) => res.send(users))
+    .catch(() =>
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" })
+    );
+
+// Function to get a user by ID
+const getUser = (req, res) =>
+  User.findById(req.params.userId)
     .orFail(() => new mongoose.Error.DocumentNotFoundError())
     .then((user) => res.send(user))
     .catch((err) => {
@@ -48,5 +59,6 @@ const getUserById = (req, res) =>
 
 module.exports = {
   createUser,
-  getUserById,
+  getUsers,
+  getUser,
 };
