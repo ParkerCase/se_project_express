@@ -1,5 +1,7 @@
 const { isURL } = require("validator");
 
+const mongoose = require("mongoose");
+
 const ClothingItem = require("../models/clothingItem");
 
 const {
@@ -12,7 +14,11 @@ const {
 const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
-  if (!imageUrl || typeof imageUrl !== "string" || !isURL(imageUrl)) {
+  if (
+    !imageUrl ||
+    typeof imageUrl !== "string" ||
+    !isURL(imageUrl, { protocols: ["http", "https"], require_protocol: true })
+  ) {
     return res.status(BAD_REQUEST).send({ message: "Invalid URL for image" });
   }
 
@@ -41,8 +47,14 @@ const getClothingItems = (req, res) =>
     );
 
 // Get clothing item by ID
-const getClothingItem = (req, res) =>
-  ClothingItem.findById(req.params.id)
+const getClothingItem = (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+  }
+
+  return ClothingItem.findById(id)
     .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
     .catch((err) => {
@@ -53,11 +65,18 @@ const getClothingItem = (req, res) =>
         message: "An error has occurred on the server",
       });
     });
+};
 
 // Like a clothing item
-const likeItem = (req, res) =>
-  ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
+const likeItem = (req, res) => {
+  const { itemId } = req.params;
+
+  if (!mongoose.isValidObjectId(itemId)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+  }
+
+  return ClothingItem.findByIdAndUpdate(
+    itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
@@ -71,11 +90,18 @@ const likeItem = (req, res) =>
         message: "An error has occurred on the server",
       });
     });
+};
 
 // Dislike (remove like) from a clothing item
-const dislikeItem = (req, res) =>
-  ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
+const dislikeItem = (req, res) => {
+  const { itemId } = req.params;
+
+  if (!mongoose.isValidObjectId(itemId)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+  }
+
+  return ClothingItem.findByIdAndUpdate(
+    itemId,
     { $pull: { likes: req.user._id } },
     { new: true }
   )
@@ -89,10 +115,17 @@ const dislikeItem = (req, res) =>
         message: "An error has occurred on the server",
       });
     });
+};
 
 // Delete clothing item
-const deleteClothingItem = (req, res) =>
-  ClothingItem.findByIdAndDelete(req.params.id)
+const deleteClothingItem = (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+  }
+
+  return ClothingItem.findByIdAndDelete(id)
     .orFail(() => new Error("ItemNotFound"))
     .then(() => res.status(200).send({ message: "Item deleted" }))
     .catch((err) => {
@@ -103,6 +136,7 @@ const deleteClothingItem = (req, res) =>
         message: "An error has occurred on the server",
       });
     });
+};
 
 module.exports = {
   createClothingItem,

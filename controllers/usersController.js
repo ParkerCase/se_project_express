@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 const User = require("../models/user");
 
 const {
@@ -17,8 +19,14 @@ const getUsers = (req, res) =>
     );
 
 // Get a user by ID
-const getUser = (req, res) =>
-  User.findById(req.params.userId)
+const getUser = (req, res) => {
+  const { userId } = req.params;
+
+  if (!mongoose.isValidObjectId(userId)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid user ID format" });
+  }
+
+  return User.findById(userId)
     .orFail(() => new Error("UserNotFound"))
     .then((user) => res.status(200).send(user))
     .catch((err) => {
@@ -29,6 +37,7 @@ const getUser = (req, res) =>
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
     });
+};
 
 // Create a new user
 const createUser = (req, res) => {
@@ -38,6 +47,10 @@ const createUser = (req, res) => {
     return res
       .status(BAD_REQUEST)
       .send({ message: "Name and avatar are required" });
+  }
+
+  if (typeof name !== "string" || name.length < 2 || name.length > 30) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
   }
 
   return User.create({ name, avatar })
