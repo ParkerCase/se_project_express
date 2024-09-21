@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "lint": "npx eslint ."
+    "lint": "eslint .",
+    "test": "npm run lint"
   },
   "author": "Parker Case",
   "license": "ISC",
