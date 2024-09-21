@@ -14,7 +14,7 @@ const userSchema = new Schema({
     required: true,
     validate: {
       validator(v) {
-        return /^(http|https):\/\/[^ "]+$/.test(v); // URL validation
+        return /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i.test(v);
       },
       message: "Please enter a valid URL.",
     },

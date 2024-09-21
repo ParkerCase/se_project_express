@@ -4,6 +4,7 @@ const {
   BAD_REQUEST,
   INTERNAL_SERVER_ERROR,
 } = require("../utils/errors");
+const { isValidObjectId } = require("mongoose");
 
 // Controller to get all users
 const getUsers = (req, res) => {
@@ -18,6 +19,11 @@ const getUsers = (req, res) => {
 
 // Controller to get a user by ID
 const getUser = (req, res) => {
+  // Validate the userId before querying the database
+  if (!isValidObjectId(req.params.userId)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
+  }
+
   User.findById(req.params.userId)
     .orFail(() => new Error("UserNotFound"))
     .then((user) => res.send(user))

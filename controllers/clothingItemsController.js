@@ -4,9 +4,15 @@ const {
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
 } = require("../utils/errors");
+const { isValidObjectId } = require("mongoose");
 
 // Controller to like a clothing item
 const likeItem = (req, res) => {
+  // Validate the itemId before proceeding
+  if (!isValidObjectId(req.params.itemId)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
+  }
+
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } }, // Add user ID to likes array if it's not already there
@@ -31,6 +37,11 @@ const likeItem = (req, res) => {
 
 // Controller to unlike a clothing item
 const dislikeItem = (req, res) => {
+  // Validate the itemId before proceeding
+  if (!isValidObjectId(req.params.itemId)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
+  }
+
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } }, // Remove user ID from likes array
@@ -67,6 +78,11 @@ const getClothingItems = (req, res) => {
 
 // Controller to get a single clothing item by ID
 const getClothingItem = (req, res) => {
+  // Validate the itemId before proceeding
+  if (!isValidObjectId(req.params.itemId)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
+  }
+
   ClothingItem.findById(req.params.itemId)
     .orFail(() => new Error("ItemNotFound")) // Use .orFail() to handle missing item
     .then((item) => res.send(item))
@@ -99,6 +115,11 @@ const createClothingItem = (req, res) => {
 
 // Controller to delete a clothing item by ID
 const deleteClothingItem = (req, res) => {
+  // Validate the itemId before proceeding
+  if (!isValidObjectId(req.params.itemId)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
+  }
+
   ClothingItem.findByIdAndDelete(req.params.itemId)
     .orFail(() => new Error("ItemNotFound")) // Throw an error if the item is not found
     .then(() => res.send({ message: "Clothing item deleted" }))
