@@ -119,13 +119,15 @@ const dislikeItem = (req, res) => {
 
 // Delete clothing item
 const deleteClothingItem = (req, res) => {
-  const { id } = req.params;
+  const { itemId } = req.params;
 
-  if (!mongoose.isValidObjectId(id)) {
+  // Validate the item ID format
+  if (!mongoose.isValidObjectId(itemId)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
   }
 
-  return ClothingItem.findByIdAndDelete(id)
+  // Proceed with deletion
+  return ClothingItem.findByIdAndDelete(itemId)
     .orFail(() => new Error("ItemNotFound"))
     .then(() => res.status(200).send({ message: "Item deleted" }))
     .catch((err) => {
