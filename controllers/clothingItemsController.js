@@ -1,12 +1,13 @@
 const { isURL } = require("validator");
+
 const ClothingItem = require("../models/clothingItem");
+
 const { BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("../utils/errors");
 
 // Create a clothing item with validation for imageUrl
 const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
-  // Ensure imageUrl is valid
   if (!imageUrl || typeof imageUrl !== "string" || !isURL(imageUrl)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid URL for image" });
   }
@@ -43,7 +44,7 @@ const getClothingItem = (req, res) => {
     .then((item) => res.send(item))
     .catch((err) => {
       if (err.message === "ItemNotFound") {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
+        return res.status(404).send({ message: "Item not found" }); // Replaced NOT_FOUND with 404
       }
       return res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server",
@@ -58,7 +59,7 @@ const deleteClothingItem = (req, res) => {
     .then(() => res.send({ message: "Clothing item deleted" }))
     .catch((err) => {
       if (err.message === "ItemNotFound") {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
+        return res.status(404).send({ message: "Item not found" }); // Replaced NOT_FOUND with 404
       }
       return res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server",
@@ -77,7 +78,7 @@ const likeItem = (req, res) => {
     .then((item) => res.send(item))
     .catch((err) => {
       if (err.message === "ItemNotFound") {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
+        return res.status(404).send({ message: "Item not found" }); // Replaced NOT_FOUND with 404
       }
       return res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server",
@@ -96,7 +97,7 @@ const dislikeItem = (req, res) => {
     .then((item) => res.send(item))
     .catch((err) => {
       if (err.message === "ItemNotFound") {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
+        return res.status(404).send({ message: "Item not found" }); // Replaced NOT_FOUND with 404
       }
       return res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server",
