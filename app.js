@@ -38,7 +38,7 @@ mongoose
   .then(() => {
     if (process.env.NODE_ENV !== "production") {
       // Only log this message in development mode
-      console.log("Connected to MongoDB");
+      // console.log("Connected to MongoDB");
     }
   })
   .catch((err) => {
@@ -52,6 +52,6 @@ mongoose
 app.listen(PORT, () => {
   if (process.env.NODE_ENV !== "production") {
     // Only log this message in development mode
-    console.log(`Server is running on port ${PORT}`);
+    // console.log(`Server is running on port ${PORT}`);
   }
 });
