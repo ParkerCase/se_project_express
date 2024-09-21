@@ -1,5 +1,6 @@
 const { isURL } = require("validator");
 const User = require("../models/user");
+
 const { BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("../utils/errors");
 
 // Create a user with validation for avatar URL
@@ -28,11 +29,11 @@ const createUser = (req, res) => {
 // Simplified arrow function without block statement
 const getUserById = (req, res) =>
   User.findById(req.params.id)
-    .orFail(() => new Error("UserNotFound"))
+    .orFail(() => new mongoose.Error.DocumentNotFoundError())
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.message === "UserNotFound") {
-        return res.status(BAD_REQUEST).send({ message: "User not found" });
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
       }
       return res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server",
