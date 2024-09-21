@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
@@ -12,7 +13,7 @@ const userSchema = new Schema({
     type: String,
     required: true,
     validate: {
-      validator: function (v) {
+      validator(v) {
         return /^(http|https):\/\/[^ "]+$/.test(v); // URL validation
       },
       message: "Please enter a valid URL.",

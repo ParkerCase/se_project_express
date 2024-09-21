@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const { Schema } = mongoose;
 
 const clothingItemSchema = new Schema({
@@ -17,7 +18,7 @@ const clothingItemSchema = new Schema({
     type: String,
     required: true,
     validate: {
-      validator: function (v) {
+      validator(v) {
         return /^(http|https):\/\/[^ "]+$/.test(v); // URL validation
       },
       message: "Please enter a valid URL.",
