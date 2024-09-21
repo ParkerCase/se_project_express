@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+const { isURL } = require("validator");
+
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
@@ -13,9 +15,7 @@ const userSchema = new Schema({
     type: String,
     required: true,
     validate: {
-      validator(v) {
-        return /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i.test(v);
-      },
+      validator: (v) => isURL(v), // Use validator package to validate URL
       message: "Please enter a valid URL.",
     },
   },
