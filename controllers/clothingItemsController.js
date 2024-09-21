@@ -1,7 +1,5 @@
 const { isURL } = require("validator");
 
-const mongoose = require("mongoose");
-
 const ClothingItem = require("../models/clothingItem");
 
 const {
@@ -56,6 +54,42 @@ const getClothingItemById = (req, res) =>
       });
     });
 
+// Like a clothing item
+const likeItem = (req, res) =>
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail(() => new Error("ItemNotFound"))
+    .then((item) => res.send(item))
+    .catch((err) => {
+      if (err.message === "ItemNotFound") {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+      return res.status(INTERNAL_SERVER_ERROR).send({
+        message: "An error has occurred on the server",
+      });
+    });
+
+// Dislike (remove like) from a clothing item
+const dislikeItem = (req, res) =>
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail(() => new Error("ItemNotFound"))
+    .then((item) => res.send(item))
+    .catch((err) => {
+      if (err.message === "ItemNotFound") {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+      return res.status(INTERNAL_SERVER_ERROR).send({
+        message: "An error has occurred on the server",
+      });
+    });
+
 // Delete clothing item
 const deleteClothingItem = (req, res) =>
   ClothingItem.findByIdAndRemove(req.params.id)
@@ -70,61 +104,11 @@ const deleteClothingItem = (req, res) =>
       });
     });
 
-// Like a clothing item
-const likeItem = (req, res) => {
-  const { itemId } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
-  }
-
-  ClothingItem.findByIdAndUpdate(
-    itemId,
-    { $addToSet: { likes: req.user._id } },
-    { new: true }
-  )
-    .then((item) => {
-      if (!item) {
-        return res.status(NOT_FOUND).json({ message: "Item not found" });
-      }
-      return res.status(200).json(item);
-    })
-    .catch(() =>
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .json({ message: "An error has occurred on the server" })
-    );
-};
-
-// Dislike a clothing item
-const dislikeItem = (req, res) => {
-  const { itemId } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
-  }
-
-  ClothingItem.findByIdAndUpdate(
-    itemId,
-    { $pull: { likes: req.user._id } },
-    { new: true }
-  )
-    .then((item) => {
-      if (!item) {
-        return res.status(NOT_FOUND).json({ message: "Item not found" });
-      }
-      return res.status(200).json(item);
-    })
-    .catch(() =>
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .json({ message: "An error has occurred on the server" })
-    );
-};
-
 module.exports = {
   createClothingItem,
   getClothingItems,
   getClothingItemById,
-  deleteClothingItem,
   likeItem,
   dislikeItem,
+  deleteClothingItem,
 };
