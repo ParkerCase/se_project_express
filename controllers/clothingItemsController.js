@@ -6,6 +6,7 @@ const { BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("../utils/errors");
 const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
+  // Ensure imageUrl is valid
   if (!imageUrl || typeof imageUrl !== "string" || !isURL(imageUrl)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid URL for image" });
   }
@@ -24,21 +25,90 @@ const createClothingItem = (req, res) => {
     });
 };
 
-// Simplified arrow function without block statement
-const getClothingItemById = (req, res) =>
-  ClothingItem.findById(req.params.id)
+// Get all clothing items
+const getClothingItems = (req, res) => {
+  ClothingItem.find({})
+    .then((items) => res.send(items))
+    .catch(() =>
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" })
+    );
+};
+
+// Get a clothing item by ID
+const getClothingItem = (req, res) => {
+  ClothingItem.findById(req.params.itemId)
     .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
     .catch((err) => {
       if (err.message === "ItemNotFound") {
-        return res.status(BAD_REQUEST).send({ message: "Item not found" });
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
       return res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server",
       });
     });
+};
+
+// Delete a clothing item by ID
+const deleteClothingItem = (req, res) => {
+  ClothingItem.findByIdAndRemove(req.params.itemId)
+    .orFail(() => new Error("ItemNotFound"))
+    .then(() => res.send({ message: "Clothing item deleted" }))
+    .catch((err) => {
+      if (err.message === "ItemNotFound") {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+      return res.status(INTERNAL_SERVER_ERROR).send({
+        message: "An error has occurred on the server",
+      });
+    });
+};
+
+// Like a clothing item
+const likeItem = (req, res) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $addToSet: { likes: req.user._id } }, // addToSet ensures no duplicates
+    { new: true }
+  )
+    .orFail(() => new Error("ItemNotFound"))
+    .then((item) => res.send(item))
+    .catch((err) => {
+      if (err.message === "ItemNotFound") {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+      return res.status(INTERNAL_SERVER_ERROR).send({
+        message: "An error has occurred on the server",
+      });
+    });
+};
+
+// Dislike (remove like) from a clothing item
+const dislikeItem = (req, res) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $pull: { likes: req.user._id } }, // pull removes the like
+    { new: true }
+  )
+    .orFail(() => new Error("ItemNotFound"))
+    .then((item) => res.send(item))
+    .catch((err) => {
+      if (err.message === "ItemNotFound") {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+      return res.status(INTERNAL_SERVER_ERROR).send({
+        message: "An error has occurred on the server",
+      });
+    });
+};
 
 module.exports = {
+  getClothingItems,
+  getClothingItem,
   createClothingItem,
-  getClothingItemById,
+  deleteClothingItem,
+  likeItem,
+  dislikeItem,
 };
