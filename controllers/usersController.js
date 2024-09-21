@@ -1,7 +1,13 @@
+const mongoose = require("mongoose");
+
 const { isURL } = require("validator");
 const User = require("../models/user");
 
-const { BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("../utils/errors");
+const {
+  NOT_FOUND,
+  BAD_REQUEST,
+  INTERNAL_SERVER_ERROR,
+} = require("../utils/errors");
 
 // Create a user with validation for avatar URL
 const createUser = (req, res) => {
