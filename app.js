@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 });
 
 // Use routes from index.js
-app.use(routes);
+app.use("/", routes);
 
 // Catch-all route for undefined routes
 app.use((req, res) => {

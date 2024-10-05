@@ -18,7 +18,7 @@ router.get("/", getUsers);
 router.get("/:userId", getUser);
 
 // Route to create a new user (signup)
-router.post("/signup", createUser); // Use /signup instead of just /
+router.post("/", createUser); // Use /signup instead of just /
 
 // Route to log in the user (login)
 router.post("/login", login); // Use /login

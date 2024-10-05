@@ -8,30 +8,42 @@ const {
 } = require("../utils/errors");
 
 // Create a clothing item with validation for imageUrl
-const createClothingItem = (req, res) => {
+const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
-  if (
-    !imageUrl ||
-    typeof imageUrl !== "string" ||
-    !isURL(imageUrl, { protocols: ["http", "https"], require_protocol: true })
-  ) {
-    res.status(BAD_REQUEST).send({ message: "Invalid URL for image" });
-    return;
+  // Check if all required fields are provided
+  if (!name || !weather || !imageUrl) {
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "All fields (name, weather, imageUrl) are required" });
   }
 
-  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
+  // Validate name length
+  if (typeof name !== "string" || name.length < 2 || name.length > 30) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
+  }
+
+  // Validate URL
+  if (
+    !isURL(imageUrl, { protocols: ["http", "https"], require_protocol: true })
+  ) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid URL for image" });
+  }
+
+  // Create the item, assigning the owner from the logged-in user
+  Item.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => res.status(201).send(item))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(BAD_REQUEST).send({
-          message: "Invalid data provided for creating a clothing item",
-        });
-      } else {
-        res.status(INTERNAL_SERVER_ERROR).send({
-          message: "An error has occurred on the server",
-        });
+        return res
+          .status(BAD_REQUEST)
+          .send({
+            message: "Invalid data provided for creating a clothing item",
+          });
       }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -158,7 +170,7 @@ const deleteClothingItem = (req, res) => {
 };
 
 module.exports = {
-  createClothingItem,
+  createItem,
   getClothingItems,
   getClothingItem,
   likeItem,

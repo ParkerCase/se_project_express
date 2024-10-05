@@ -29,13 +29,15 @@ const getUser = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid user ID format" });
   }
 
-  return User.findById(userId)
+  User.findById(userId)
     .orFail(() => {
-      throw new Error("UserNotFound");
+      const error = new Error("UserNotFound");
+      error.statusCode = NOT_FOUND;
+      throw error;
     })
     .then((user) => res.status(200).send(user))
     .catch((err) => {
-      if (err.message === "UserNotFound") {
+      if (err.statusCode === NOT_FOUND) {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
       return res
@@ -68,7 +70,12 @@ const createUser = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
   }
 
-  return bcrypt
+  // Additional validation for URL fields
+  if (!isValidUrl(avatar)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid URL for avatar" });
+  }
+
+  bcrypt
     .hash(password, 10)
     .then((hashedPassword) =>
       User.create({ name, avatar, email, password: hashedPassword }),
@@ -92,6 +99,16 @@ const createUser = (req, res) => {
         .send({ message: "An error has occurred on the server" });
     });
 };
+
+// Helper function to validate URLs
+function isValidUrl(url) {
+  try {
+    new URL(url);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 // Login controller
 const login = (req, res) => {

@@ -5,7 +5,7 @@ const router = express.Router();
 const {
   getClothingItems,
   getClothingItem,
-  createClothingItem,
+  createItem,
   deleteClothingItem,
   likeItem,
   dislikeItem,
@@ -16,7 +16,7 @@ router.get("/", getClothingItems);
 
 router.get("/:itemId", getClothingItem);
 
-router.post("/", createClothingItem);
+router.post("/", createItem);
 
 router.delete("/:itemId", deleteClothingItem);
 
