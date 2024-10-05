@@ -1,7 +1,8 @@
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs"); // Import bcrypt for password hashing
-const jwt = require("jsonwebtoken"); // Import jwt for token creation
-const { JWT_SECRET } = require("../utils/config"); // Import the secret
+
+const { JWT_SECRET } = require("../utils/config");
 const User = require("../models/user");
 
 const {
@@ -21,7 +22,6 @@ const getUsers = (req, res) =>
         .send({ message: "An error has occurred on the server" }),
     );
 
-// Get a user by ID
 const getUser = (req, res) => {
   const { userId } = req.params;
 
@@ -30,7 +30,9 @@ const getUser = (req, res) => {
   }
 
   return User.findById(userId)
-    .orFail(() => new Error("UserNotFound"))
+    .orFail(() => {
+      throw new Error("UserNotFound");
+    })
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.message === "UserNotFound") {
@@ -53,56 +55,41 @@ const getCurrentUser = (req, res) =>
     );
 
 // Create a new user
-// Create a new user
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  // Check for missing fields
   if (!name || !avatar || !email || !password) {
-    return res
+    res
       .status(BAD_REQUEST)
       .send({ message: "Name, avatar, email, and password are required" });
+    return;
   }
 
-  // Validate name length
   if (typeof name !== "string" || name.length < 2 || name.length > 30) {
-    return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
+    res.status(BAD_REQUEST).send({ message: "Invalid name length" });
+    return;
   }
 
-  // Validate the avatar URL (optional step if it's not handled elsewhere)
-  const isValidUrl = (url) => {
-    try {
-      new URL(url);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  };
-
-  if (!isValidUrl(avatar)) {
-    return res.status(BAD_REQUEST).send({ message: "Invalid avatar URL" });
-  }
-
-  // Hash the password before saving
-  return bcrypt
+  bcrypt
     .hash(password, 10)
     .then((hashedPassword) =>
       User.create({ name, avatar, email, password: hashedPassword }),
     )
-    .then((user) => res.status(201).send(user))
+    .then((user) =>
+      res
+        .status(201)
+        .send({ _id: user._id, name: user.name, avatar: user.avatar }),
+    )
     .catch((err) => {
       if (err.code === 11000) {
-        // Duplicate email error
-        return res.status(409).send({ message: "Email already exists" });
+        res.status(409).send({ message: "Email already exists" });
+      } else if (err.name === "ValidationError") {
+        res.status(BAD_REQUEST).send({ message: "Invalid data provided" });
+      } else {
+        res
+          .status(INTERNAL_SERVER_ERROR)
+          .send({ message: "An error has occurred on the server" });
       }
-      if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Invalid data provided" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -110,85 +97,78 @@ const createUser = (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.body;
 
-  // Check if email and password are provided
   if (!email || !password) {
-    return res
+    res
       .status(BAD_REQUEST)
       .send({ message: "Email and password are required" });
+    return;
   }
 
-  // Find the user by email and select the password field
-  return User.findOne({ email })
+  User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
-        return res
-          .status(UNAUTHORIZED)
-          .send({ message: "Invalid email or password" });
+        res.status(UNAUTHORIZED).send({ message: "Invalid email or password" });
+        return;
       }
 
-      // Compare passwords
-      return bcrypt.compare(password, user.password).then((matched) => {
+      bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          return res
+          res
             .status(UNAUTHORIZED)
             .send({ message: "Invalid email or password" });
+          return;
         }
 
-        // Generate a JWT
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
         });
-        return res.send({ token }); // Ensure a return here
+        res.send({ token });
       });
     })
     .catch(() =>
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" }),
+      res.status(INTERNAL_SERVER_ERROR).send({
+        message: "An error has occurred on the server",
+      }),
     );
 };
 
-// Update the current user's profile (Step 7)
+// Update the current user's profile
 const updateUser = (req, res) => {
   const { name, avatar } = req.body;
 
-  // Check for missing fields
   if (!name || !avatar) {
-    return res
-      .status(BAD_REQUEST)
-      .send({ message: "Name and avatar are required" });
+    res.status(BAD_REQUEST).send({ message: "Name and avatar are required" });
+    return;
   }
 
-  // Validate name length
   if (typeof name !== "string" || name.length < 2 || name.length > 30) {
-    return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
+    res.status(BAD_REQUEST).send({ message: "Invalid name length" });
+    return;
   }
 
-  // Update the user in the database
-  return User.findByIdAndUpdate(
+  User.findByIdAndUpdate(
     req.user._id,
     { name, avatar },
-    { new: true, runValidators: true }, // Ensure the updated document is returned and validators are run
+    { new: true, runValidators: true },
   )
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Invalid data provided" });
+        res.status(BAD_REQUEST).send({ message: "Invalid data provided" });
+      } else {
+        res
+          .status(INTERNAL_SERVER_ERROR)
+          .send({ message: "An error has occurred on the server" });
       }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
     });
 };
 
 module.exports = {
   getUsers,
   getUser,
-  getCurrentUser, // Export the getCurrentUser function
+  getCurrentUser,
   createUser,
-  login, // Export the login function
-  updateUser, // Export the updateUser function
+  login,
+  updateUser,
 };
