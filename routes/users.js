@@ -6,6 +6,7 @@ const {
   createUser,
   getCurrentUser,
   updateUser,
+  login,
 } = require("../controllers/users");
 
 const router = express.Router();
@@ -18,6 +19,9 @@ router.get("/:userId", getUser);
 
 // Route to create a new user (signup)
 router.post("/", createUser);
+
+// Route to log in the user (login)
+router.post("/login", login); // Add this line
 
 // Route to get the logged-in user's data
 router.get("/me", auth, getCurrentUser);
