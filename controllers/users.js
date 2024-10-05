@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const { isEmail } = require("validator"); // Using validator's isEmail
+const { isEmail } = require("validator");
 
 const { JWT_SECRET } = require("../utils/config");
 const User = require("../models/user");
@@ -13,25 +13,25 @@ const {
   UNAUTHORIZED,
 } = require("../utils/errors");
 
-// Helper function to validate URLs
+// Helper function to validate URLs without using 'new'
 const isValidUrl = (url) => {
   try {
-    new URL(url);
-    return true;
+    return Boolean(new URL(url));
   } catch (error) {
     return false;
   }
 };
 
 // Get all users
-const getUsers = (req, res) =>
-  User.find({})
+const getUsers = (req, res) => {
+  return User.find({})
     .then((users) => res.status(200).send(users))
     .catch(() =>
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" }),
     );
+};
 
 // Get user by ID
 const getUser = (req, res) => {
@@ -41,7 +41,7 @@ const getUser = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid user ID format" });
   }
 
-  User.findById(userId)
+  return User.findById(userId)
     .orFail(() => new Error("UserNotFound"))
     .then((user) => res.status(200).send(user))
     .catch((err) => {
@@ -55,14 +55,15 @@ const getUser = (req, res) => {
 };
 
 // Get the current user's data
-const getCurrentUser = (req, res) =>
-  User.findById(req.user._id)
+const getCurrentUser = (req, res) => {
+  return User.findById(req.user._id)
     .then((user) => res.status(200).send(user))
     .catch(() =>
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" }),
     );
+};
 
 // Create a new user
 const createUser = (req, res) => {
@@ -86,7 +87,7 @@ const createUser = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid email format" });
   }
 
-  bcrypt
+  return bcrypt
     .hash(password, 10)
     .then((hashedPassword) =>
       User.create({
@@ -126,7 +127,7 @@ const login = (req, res) => {
       .send({ message: "Email and password are required" });
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
@@ -135,7 +136,7 @@ const login = (req, res) => {
           .send({ message: "Invalid email or password" });
       }
 
-      bcrypt.compare(password, user.password).then((matched) => {
+      return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
           return res
             .status(UNAUTHORIZED)
@@ -173,7 +174,7 @@ const updateUser = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid URL for avatar" });
   }
 
-  User.findByIdAndUpdate(
+  return User.findByIdAndUpdate(
     req.user._id,
     { name, avatar },
     { new: true, runValidators: true },
