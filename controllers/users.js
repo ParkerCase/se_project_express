@@ -53,6 +53,7 @@ const getCurrentUser = (req, res) =>
     );
 
 // Create a new user
+// Create a new user
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
@@ -66,6 +67,20 @@ const createUser = (req, res) => {
   // Validate name length
   if (typeof name !== "string" || name.length < 2 || name.length > 30) {
     return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
+  }
+
+  // Validate the avatar URL (optional step if it's not handled elsewhere)
+  const isValidUrl = (url) => {
+    try {
+      new URL(url);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  if (!isValidUrl(avatar)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid avatar URL" });
   }
 
   // Hash the password before saving
