@@ -1,7 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
+
 const usersRoutes = require("./routes/users");
 const clothingItemsRoutes = require("./routes/clothingItems");
+const authRoutes = require("./routes"); // Import the new auth routes
 
 const { NOT_FOUND } = require("./utils/errors");
 
@@ -12,16 +15,16 @@ const { PORT = 3001 } = process.env;
 // Middleware to parse JSON request bodies
 app.use(express.json());
 
-// Middleware to attach a hardcoded user ID to each request
-app.use((req, res, next) => {
-  req.user = {
-    _id: "66edfbf0fb0984ff3b0fdc16",
-  };
-  next();
-});
+// Use CORS
+app.use(cors());
 
-// Use routes
+// Use auth routes for signup and signin
+app.use("/auth", authRoutes);
+
+// Use user routes (including /me and profile-related actions)
 app.use("/users", usersRoutes);
+
+// Use routes for clothing items
 app.use("/items", clothingItemsRoutes);
 
 // Catch-all route for undefined routes
@@ -31,10 +34,7 @@ app.use((req, res) => {
 
 // MongoDB connection
 mongoose
-  .connect("mongodb://127.0.0.1:27017/wtwr_db", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
     if (process.env.NODE_ENV !== "production") {
       console.log("Connected to MongoDB");

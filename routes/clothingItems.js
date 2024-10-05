@@ -9,7 +9,7 @@ const {
   deleteClothingItem,
   likeItem,
   dislikeItem,
-} = require("../controllers/clothingItemsController");
+} = require("../controllers/clothingItems");
 
 // Routes
 router.get("/", getClothingItems);

@@ -43,7 +43,7 @@ const getClothingItems = (req, res) =>
     .catch(() =>
       res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server",
-      })
+      }),
     );
 
 // Get clothing item by ID
@@ -78,7 +78,7 @@ const likeItem = (req, res) => {
   return ClothingItem.findByIdAndUpdate(
     itemId,
     { $addToSet: { likes: req.user._id } },
-    { new: true }
+    { new: true },
   )
     .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
@@ -103,7 +103,7 @@ const dislikeItem = (req, res) => {
   return ClothingItem.findByIdAndUpdate(
     itemId,
     { $pull: { likes: req.user._id } },
-    { new: true }
+    { new: true },
   )
     .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
@@ -126,10 +126,22 @@ const deleteClothingItem = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
   }
 
-  // Proceed with deletion
-  return ClothingItem.findByIdAndDelete(itemId)
+  // Find the item by ID
+  return ClothingItem.findById(itemId)
     .orFail(() => new Error("ItemNotFound"))
-    .then(() => res.status(200).send({ message: "Item deleted" }))
+    .then((item) => {
+      // Check if the logged-in user is the owner of the item
+      if (item.owner.toString() !== req.user._id) {
+        return res
+          .status(403)
+          .send({ message: "You are not authorized to delete this item" });
+      }
+
+      // Proceed with deletion if the user is the owner
+      return ClothingItem.findByIdAndDelete(itemId).then(() =>
+        res.status(200).send({ message: "Item deleted" }),
+      );
+    })
     .catch((err) => {
       if (err.message === "ItemNotFound") {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
