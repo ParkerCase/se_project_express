@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+const { isEmail } = require("validator"); // Using validator's isEmail
 
 const { JWT_SECRET } = require("../utils/config");
 const User = require("../models/user");
@@ -12,6 +13,16 @@ const {
   UNAUTHORIZED,
 } = require("../utils/errors");
 
+// Helper function to validate URLs
+const isValidUrl = (url) => {
+  try {
+    new URL(url);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
 // Get all users
 const getUsers = (req, res) =>
   User.find({})
@@ -22,7 +33,7 @@ const getUsers = (req, res) =>
         .send({ message: "An error has occurred on the server" }),
     );
 
-// Get a specific user by ID
+// Get user by ID
 const getUser = (req, res) => {
   const { userId } = req.params;
 
@@ -30,15 +41,11 @@ const getUser = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid user ID format" });
   }
 
-  return User.findById(userId)
-    .orFail(() => {
-      const error = new Error("UserNotFound");
-      error.statusCode = NOT_FOUND;
-      throw error;
-    })
+  User.findById(userId)
+    .orFail(() => new Error("UserNotFound"))
     .then((user) => res.status(200).send(user))
     .catch((err) => {
-      if (err.statusCode === NOT_FOUND) {
+      if (err.message === "UserNotFound") {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
       return res
@@ -57,58 +64,43 @@ const getCurrentUser = (req, res) =>
         .send({ message: "An error has occurred on the server" }),
     );
 
-// Helper function to validate URLs
-const isValidUrl = (url) => {
-  try {
-    const urlInstance = new URL(url); // Use the result of 'new URL' properly
-    return !!urlInstance;
-  } catch (_) {
-    return false;
-  }
-};
-
 // Create a new user
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  // Check if all required fields are present
   if (!name || !avatar || !email || !password) {
     return res
       .status(BAD_REQUEST)
       .send({ message: "Name, avatar, email, and password are required" });
   }
 
-  // Validate name length
   if (typeof name !== "string" || name.length < 2 || name.length > 30) {
     return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
   }
 
-  // Validate avatar URL
   if (!isValidUrl(avatar)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid URL for avatar" });
   }
 
-  // Validate email format (using regex or a package like validator)
-  if (!isValidEmail(email)) {
+  if (!isEmail(email)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid email format" });
   }
 
-  // Hash the password and create the user
-  return bcrypt
+  bcrypt
     .hash(password, 10)
-    .then((hashedPassword) => {
-      return User.create({
+    .then((hashedPassword) =>
+      User.create({
         name,
         avatar,
         email,
         password: hashedPassword,
-      });
-    })
-    .then((user) => {
-      return res
+      }),
+    )
+    .then((user) =>
+      res
         .status(201)
-        .send({ _id: user._id, name: user.name, avatar: user.avatar });
-    })
+        .send({ _id: user._id, name: user.name, avatar: user.avatar }),
+    )
     .catch((err) => {
       if (err.code === 11000) {
         return res.status(409).send({ message: "Email already exists" });
@@ -134,7 +126,7 @@ const login = (req, res) => {
       .send({ message: "Email and password are required" });
   }
 
-  return User.findOne({ email })
+  User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
@@ -143,7 +135,7 @@ const login = (req, res) => {
           .send({ message: "Invalid email or password" });
       }
 
-      return bcrypt.compare(password, user.password).then((matched) => {
+      bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
           return res
             .status(UNAUTHORIZED)
@@ -177,7 +169,11 @@ const updateUser = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
   }
 
-  return User.findByIdAndUpdate(
+  if (!isValidUrl(avatar)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid URL for avatar" });
+  }
+
+  User.findByIdAndUpdate(
     req.user._id,
     { name, avatar },
     { new: true, runValidators: true },
