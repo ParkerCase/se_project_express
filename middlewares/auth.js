@@ -13,9 +13,9 @@ const auth = (req, res, next) => {
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
-    next();
+    return next();
   } catch (err) {
-    res.status(401).send({ message: "Invalid token" });
+    return res.status(401).send({ message: "Invalid token" });
   }
 };
 

@@ -42,8 +42,8 @@ const getUser = (req, res) => {
     });
 };
 
-// Get the current user's data (Step 6)
-const getCurrentUser = (req, res) => {
+// Get the current user's data
+const getCurrentUser = (req, res) =>
   User.findById(req.user._id)
     .then((user) => res.status(200).send(user))
     .catch(() =>
@@ -51,7 +51,6 @@ const getCurrentUser = (req, res) => {
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" }),
     );
-};
 
 // Create a new user
 const createUser = (req, res) => {
@@ -70,11 +69,11 @@ const createUser = (req, res) => {
   }
 
   // Hash the password before saving
-  bcrypt
+  return bcrypt
     .hash(password, 10)
-    .then((hashedPassword) => {
-      return User.create({ name, avatar, email, password: hashedPassword });
-    })
+    .then((hashedPassword) =>
+      User.create({ name, avatar, email, password: hashedPassword }),
+    )
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.code === 11000) {
@@ -104,7 +103,7 @@ const login = (req, res) => {
   }
 
   // Find the user by email and select the password field
-  User.findOne({ email })
+  return User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
@@ -125,7 +124,7 @@ const login = (req, res) => {
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
         });
-        res.send({ token });
+        return res.send({ token }); // Ensure a return here
       });
     })
     .catch(() =>
@@ -152,7 +151,7 @@ const updateUser = (req, res) => {
   }
 
   // Update the user in the database
-  User.findByIdAndUpdate(
+  return User.findByIdAndUpdate(
     req.user._id,
     { name, avatar },
     { new: true, runValidators: true }, // Ensure the updated document is returned and validators are run
