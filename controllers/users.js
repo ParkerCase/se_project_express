@@ -23,15 +23,14 @@ const isValidUrl = (url) => {
 };
 
 // Get all users
-const getUsers = (req, res) => {
-  return User.find({})
+const getUsers = (req, res) =>
+  User.find({})
     .then((users) => res.status(200).send(users))
     .catch(() =>
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" }),
     );
-};
 
 // Get user by ID
 const getUser = (req, res) => {
@@ -44,26 +43,24 @@ const getUser = (req, res) => {
   return User.findById(userId)
     .orFail(() => new Error("UserNotFound"))
     .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.message === "UserNotFound") {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
+    .catch((err) =>
+      err.message === "UserNotFound"
+        ? res.status(NOT_FOUND).send({ message: "User not found" })
+        : res
+            .status(INTERNAL_SERVER_ERROR)
+            .send({ message: "An error has occurred on the server" }),
+    );
 };
 
 // Get the current user's data
-const getCurrentUser = (req, res) => {
-  return User.findById(req.user._id)
+const getCurrentUser = (req, res) =>
+  User.findById(req.user._id)
     .then((user) => res.status(200).send(user))
     .catch(() =>
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" }),
     );
-};
 
 // Create a new user
 const createUser = (req, res) => {
@@ -90,31 +87,22 @@ const createUser = (req, res) => {
   return bcrypt
     .hash(password, 10)
     .then((hashedPassword) =>
-      User.create({
-        name,
-        avatar,
-        email,
-        password: hashedPassword,
-      }),
+      User.create({ name, avatar, email, password: hashedPassword }),
     )
     .then((user) =>
       res
         .status(201)
         .send({ _id: user._id, name: user.name, avatar: user.avatar }),
     )
-    .catch((err) => {
-      if (err.code === 11000) {
-        return res.status(409).send({ message: "Email already exists" });
-      }
-      if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Invalid data provided" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
+    .catch((err) =>
+      err.code === 11000
+        ? res.status(409).send({ message: "Email already exists" })
+        : err.name === "ValidationError"
+          ? res.status(BAD_REQUEST).send({ message: "Invalid data provided" })
+          : res
+              .status(INTERNAL_SERVER_ERROR)
+              .send({ message: "An error has occurred on the server" }),
+    );
 };
 
 // Login controller
@@ -129,26 +117,23 @@ const login = (req, res) => {
 
   return User.findOne({ email })
     .select("+password")
-    .then((user) => {
-      if (!user) {
-        return res
-          .status(UNAUTHORIZED)
-          .send({ message: "Invalid email or password" });
-      }
-
-      return bcrypt.compare(password, user.password).then((matched) => {
-        if (!matched) {
-          return res
+    .then((user) =>
+      !user
+        ? res
             .status(UNAUTHORIZED)
-            .send({ message: "Invalid email or password" });
-        }
-
-        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-          expiresIn: "7d",
-        });
-        return res.send({ token });
-      });
-    })
+            .send({ message: "Invalid email or password" })
+        : bcrypt.compare(password, user.password).then((matched) =>
+            !matched
+              ? res
+                  .status(UNAUTHORIZED)
+                  .send({ message: "Invalid email or password" })
+              : res.send({
+                  token: jwt.sign({ _id: user._id }, JWT_SECRET, {
+                    expiresIn: "7d",
+                  }),
+                }),
+          ),
+    )
     .catch(() =>
       res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server",
@@ -180,16 +165,13 @@ const updateUser = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Invalid data provided" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
+    .catch((err) =>
+      err.name === "ValidationError"
+        ? res.status(BAD_REQUEST).send({ message: "Invalid data provided" })
+        : res
+            .status(INTERNAL_SERVER_ERROR)
+            .send({ message: "An error has occurred on the server" }),
+    );
 };
 
 module.exports = {
