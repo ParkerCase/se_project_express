@@ -1,8 +1,9 @@
 const express = require("express");
+
 const app = express();
 
 // Import user routes
-const usersRouter = require("./routes/users");
+const usersRouter = require("./users");
 
 app.use(express.json()); // For parsing application/json
 app.use("/users", usersRouter); // All user-related routes will start with /users

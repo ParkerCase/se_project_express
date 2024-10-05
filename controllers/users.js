@@ -59,18 +59,16 @@ const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   if (!name || !avatar || !email || !password) {
-    res
+    return res
       .status(BAD_REQUEST)
       .send({ message: "Name, avatar, email, and password are required" });
-    return;
   }
 
   if (typeof name !== "string" || name.length < 2 || name.length > 30) {
-    res.status(BAD_REQUEST).send({ message: "Invalid name length" });
-    return;
+    return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
   }
 
-  bcrypt
+  return bcrypt
     .hash(password, 10)
     .then((hashedPassword) =>
       User.create({ name, avatar, email, password: hashedPassword }),
@@ -82,14 +80,16 @@ const createUser = (req, res) => {
     )
     .catch((err) => {
       if (err.code === 11000) {
-        res.status(409).send({ message: "Email already exists" });
-      } else if (err.name === "ValidationError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid data provided" });
-      } else {
-        res
-          .status(INTERNAL_SERVER_ERROR)
-          .send({ message: "An error has occurred on the server" });
+        return res.status(409).send({ message: "Email already exists" });
       }
+      if (err.name === "ValidationError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid data provided" });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -103,26 +103,26 @@ const login = (req, res) => {
       .send({ message: "Email and password are required" });
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
-        res.status(UNAUTHORIZED).send({ message: "Invalid email or password" });
-        return;
+        return res
+          .status(UNAUTHORIZED)
+          .send({ message: "Invalid email or password" });
       }
 
-      bcrypt.compare(password, user.password).then((matched) => {
+      return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          res
+          return res
             .status(UNAUTHORIZED)
             .send({ message: "Invalid email or password" });
-          return;
         }
 
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
         });
-        res.send({ token });
+        return res.send({ token });
       });
     })
     .catch(() =>
@@ -137,16 +137,16 @@ const updateUser = (req, res) => {
   const { name, avatar } = req.body;
 
   if (!name || !avatar) {
-    res.status(BAD_REQUEST).send({ message: "Name and avatar are required" });
-    return;
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Name and avatar are required" });
   }
 
   if (typeof name !== "string" || name.length < 2 || name.length > 30) {
-    res.status(BAD_REQUEST).send({ message: "Invalid name length" });
-    return;
+    return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
   }
 
-  User.findByIdAndUpdate(
+  return User.findByIdAndUpdate(
     req.user._id,
     { name, avatar },
     { new: true, runValidators: true },
@@ -154,12 +154,13 @@ const updateUser = (req, res) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid data provided" });
-      } else {
-        res
-          .status(INTERNAL_SERVER_ERROR)
-          .send({ message: "An error has occurred on the server" });
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid data provided" });
       }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
