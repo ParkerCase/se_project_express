@@ -98,15 +98,15 @@ const createUser = (req, res) => {
     .catch((err) => {
       if (err.code === 11000) {
         return res.status(409).send({ message: "Email already exists" });
-      } else if (err.name === "ValidationError") {
+      }
+      if (err.name === "ValidationError") {
         return res
           .status(BAD_REQUEST)
           .send({ message: "Invalid data provided" });
-      } else {
-        return res
-          .status(INTERNAL_SERVER_ERROR)
-          .send({ message: "An error has occurred on the server" });
       }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -178,11 +178,10 @@ const updateUser = (req, res) => {
         return res
           .status(BAD_REQUEST)
           .send({ message: "Invalid data provided" });
-      } else {
-        return res
-          .status(INTERNAL_SERVER_ERROR)
-          .send({ message: "An error has occurred on the server" });
       }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
