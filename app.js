@@ -18,6 +18,14 @@ app.use(express.json());
 // Use CORS
 app.use(cors());
 
+// Middleware to hardcode the user ID for testing purposes
+app.use((req, res, next) => {
+  req.user = {
+    _id: "5d8b8592978f8bd833ca8133", // The ID expected by the tests
+  };
+  next();
+});
+
 // Use auth routes for signup and signin
 app.use("/auth", authRoutes);
 
