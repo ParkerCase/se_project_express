@@ -30,7 +30,7 @@ const getUser = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid user ID format" });
   }
 
-  User.findById(userId)
+  return User.findById(userId)
     .orFail(() => {
       const error = new Error("UserNotFound");
       error.statusCode = NOT_FOUND;
@@ -48,20 +48,21 @@ const getUser = (req, res) => {
 };
 
 // Get the current user's data
-const getCurrentUser = (req, res) =>
-  User.findById(req.user._id)
+const getCurrentUser = (req, res) => {
+  return User.findById(req.user._id)
     .then((user) => res.status(200).send(user))
     .catch(() =>
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" }),
     );
+};
 
 // Helper function to validate URLs
 const isValidUrl = (url) => {
   try {
-    new URL(url); // Correct usage of new URL
-    return true;
+    const urlInstance = new URL(url); // Use the result of 'new URL' properly
+    return !!urlInstance;
   } catch (_) {
     return false;
   }
@@ -81,12 +82,11 @@ const createUser = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
   }
 
-  // Additional validation for URL fields
   if (!isValidUrl(avatar)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid URL for avatar" });
   }
 
-  bcrypt
+  return bcrypt
     .hash(password, 10)
     .then((hashedPassword) =>
       User.create({ name, avatar, email, password: hashedPassword }),
