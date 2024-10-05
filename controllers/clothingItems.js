@@ -8,7 +8,7 @@ const {
 } = require("../utils/errors");
 
 // Create a clothing item with validation for imageUrl
-const createItem = (req, res) => {
+const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
   // Check if all required fields are provided
@@ -35,11 +35,9 @@ const createItem = (req, res) => {
     .then((item) => res.status(201).send(item))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({
-            message: "Invalid data provided for creating a clothing item",
-          });
+        return res.status(BAD_REQUEST).send({
+          message: "Invalid data provided for creating a clothing item",
+        });
       }
       return res
         .status(INTERNAL_SERVER_ERROR)
@@ -170,7 +168,7 @@ const deleteClothingItem = (req, res) => {
 };
 
 module.exports = {
-  createItem,
+  createClothingItem,
   getClothingItems,
   getClothingItem,
   likeItem,
