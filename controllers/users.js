@@ -22,6 +22,7 @@ const getUsers = (req, res) =>
         .send({ message: "An error has occurred on the server" }),
     );
 
+// Get a specific user by ID
 const getUser = (req, res) => {
   const { userId } = req.params;
 
@@ -47,15 +48,14 @@ const getUser = (req, res) => {
 };
 
 // Get the current user's data
-const getCurrentUser = (req, res) => {
-  return User.findById(req.user._id)
+const getCurrentUser = (req, res) =>
+  User.findById(req.user._id)
     .then((user) => res.status(200).send(user))
     .catch(() =>
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" }),
     );
-};
 
 // Helper function to validate URLs
 const isValidUrl = (url) => {
