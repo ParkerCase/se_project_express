@@ -71,30 +71,44 @@ const isValidUrl = (url) => {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
+  // Check if all required fields are present
   if (!name || !avatar || !email || !password) {
     return res
       .status(BAD_REQUEST)
       .send({ message: "Name, avatar, email, and password are required" });
   }
 
+  // Validate name length
   if (typeof name !== "string" || name.length < 2 || name.length > 30) {
     return res.status(BAD_REQUEST).send({ message: "Invalid name length" });
   }
 
+  // Validate avatar URL
   if (!isValidUrl(avatar)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid URL for avatar" });
   }
 
+  // Validate email format (using regex or a package like validator)
+  if (!isValidEmail(email)) {
+    return res.status(BAD_REQUEST).send({ message: "Invalid email format" });
+  }
+
+  // Hash the password and create the user
   return bcrypt
     .hash(password, 10)
-    .then((hashedPassword) =>
-      User.create({ name, avatar, email, password: hashedPassword }),
-    )
-    .then((user) =>
-      res
+    .then((hashedPassword) => {
+      return User.create({
+        name,
+        avatar,
+        email,
+        password: hashedPassword,
+      });
+    })
+    .then((user) => {
+      return res
         .status(201)
-        .send({ _id: user._id, name: user.name, avatar: user.avatar }),
-    )
+        .send({ _id: user._id, name: user.name, avatar: user.avatar });
+    })
     .catch((err) => {
       if (err.code === 11000) {
         return res.status(409).send({ message: "Email already exists" });
