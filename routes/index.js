@@ -1,14 +1,11 @@
 const express = require("express");
 
-const app = express();
+const usersRoutes = require("./users"); // Import user routes
+const clothingItemsRoutes = require("./clothingItems"); // Import clothing items routes
 
-// Import user routes
-const usersRouter = require("./users");
+const router = express.Router();
 
-app.use(express.json()); // For parsing application/json
-app.use("/users", usersRouter); // All user-related routes will start with /users
+router.use("/users", usersRoutes); // All user-related routes will start with /users
+router.use("/items", clothingItemsRoutes); // All clothing items-related routes will start with /items
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+module.exports = router;

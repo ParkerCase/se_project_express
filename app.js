@@ -2,9 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const usersRoutes = require("./routes/users");
-const clothingItemsRoutes = require("./routes/clothingItems");
-const authRoutes = require("./routes"); // Import the new auth routes
+const routes = require("./routes"); // Use index.js in routes folder for routing
 
 const { NOT_FOUND } = require("./utils/errors");
 
@@ -26,14 +24,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Use auth routes for signup and signin
-app.use("/auth", authRoutes);
-
-// Use user routes (including /me and profile-related actions)
-app.use("/users", usersRoutes);
-
-// Use routes for clothing items
-app.use("/items", clothingItemsRoutes);
+// Use routes from index.js
+app.use(routes);
 
 // Catch-all route for undefined routes
 app.use((req, res) => {
