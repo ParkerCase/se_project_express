@@ -1,12 +1,13 @@
 const express = require("express");
-const { createUser, login } = require("../controllers/users"); // Import the necessary controllers
+const app = express();
 
-const router = express.Router();
+// Import user routes
+const usersRouter = require("./routes/users");
 
-// Route for signing up
-router.post("/signup", createUser);
+app.use(express.json()); // For parsing application/json
+app.use("/users", usersRouter); // All user-related routes will start with /users
 
-// Route for signing in
-router.post("/signin", login);
-
-module.exports = router;
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
