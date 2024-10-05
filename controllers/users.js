@@ -47,14 +47,25 @@ const getUser = (req, res) => {
 };
 
 // Get the current user's data
-const getCurrentUser = (req, res) =>
-  User.findById(req.user._id)
+const getCurrentUser = (req, res) => {
+  return User.findById(req.user._id)
     .then((user) => res.status(200).send(user))
     .catch(() =>
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" }),
     );
+};
+
+// Helper function to validate URLs
+const isValidUrl = (url) => {
+  try {
+    new URL(url); // Correct usage of new URL
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
 
 // Create a new user
 const createUser = (req, res) => {
@@ -99,16 +110,6 @@ const createUser = (req, res) => {
         .send({ message: "An error has occurred on the server" });
     });
 };
-
-// Helper function to validate URLs
-function isValidUrl(url) {
-  try {
-    new URL(url);
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
 
 // Login controller
 const login = (req, res) => {

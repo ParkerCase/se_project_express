@@ -31,7 +31,7 @@ const createClothingItem = (req, res) => {
   }
 
   // Create the item, assigning the owner from the logged-in user
-  Item.create({ name, weather, imageUrl, owner: req.user._id })
+  return ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => res.status(201).send(item))
     .catch((err) => {
       if (err.name === "ValidationError") {
@@ -44,7 +44,6 @@ const createClothingItem = (req, res) => {
         .send({ message: "An error has occurred on the server" });
     });
 };
-
 // Get all clothing items
 const getClothingItems = (req, res) => {
   ClothingItem.find({})
