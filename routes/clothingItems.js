@@ -1,7 +1,6 @@
 const express = require("express");
-
 const router = express.Router();
-
+const auth = require("../middlewares/auth"); // Import auth middleware
 const {
   getClothingItems,
   getClothingItem,
@@ -12,17 +11,15 @@ const {
 } = require("../controllers/clothingItems");
 
 // Routes
-router.get("/", getClothingItems);
+router.get("/", getClothingItems); // No auth required for getting all items
 
-router.get("/:itemId", getClothingItem);
+// Protect all other routes with authorization middleware
+router.get("/:itemId", auth, getClothingItem);
+router.post("/", auth, createClothingItem);
+router.delete("/:itemId", auth, deleteClothingItem);
 
-router.post("/", createClothingItem);
-
-router.delete("/:itemId", deleteClothingItem);
-
-// Routes for likes
-router.put("/:itemId/likes", likeItem);
-
-router.delete("/:itemId/likes", dislikeItem);
+// Routes for likes (protected)
+router.put("/:itemId/likes", auth, likeItem);
+router.delete("/:itemId/likes", auth, dislikeItem);
 
 module.exports = router;

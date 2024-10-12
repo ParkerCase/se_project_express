@@ -1,13 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
 const routes = require("./routes"); // Use index.js in routes folder for routing
-
 const { NOT_FOUND } = require("./utils/errors");
-
 const app = express();
-
 const { PORT = 3001 } = process.env;
 
 // Middleware to parse JSON request bodies
@@ -16,13 +12,7 @@ app.use(express.json());
 // Use CORS
 app.use(cors());
 
-// Middleware to hardcode the user ID for testing purposes
-app.use((req, res, next) => {
-  req.user = {
-    _id: "5d8b8592978f8bd833ca8133", // The ID expected by the tests
-  };
-  next();
-});
+// Remove middleware for hardcoding user ID as authorization will handle this
 
 // Use routes from index.js
 app.use("/", routes);
