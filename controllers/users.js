@@ -1,9 +1,9 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
-const { isEmail } = require("validator");
+
 const { JWT_SECRET } = require("../utils/config");
 const User = require("../models/user");
+
 const {
   BAD_REQUEST,
   NOT_FOUND,

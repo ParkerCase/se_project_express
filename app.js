@@ -1,8 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+
 const routes = require("./routes"); // Use index.js in routes folder for routing
 const { NOT_FOUND } = require("./utils/errors");
+
 const app = express();
 const { PORT = 3001 } = process.env;
 

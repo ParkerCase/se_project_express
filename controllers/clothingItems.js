@@ -1,6 +1,6 @@
-const { isURL } = require("validator");
 const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
+
 const {
   BAD_REQUEST,
   NOT_FOUND,
@@ -28,15 +28,11 @@ const createClothingItem = (req, res) => {
 };
 
 // Get all clothing items
-const getClothingItems = (req, res) => {
-  ClothingItem.find({})
+const getClothingItems = (req, res) => ClothingItem.find({})
     .then((items) => res.send(items))
-    .catch(() =>
-      res.status(INTERNAL_SERVER_ERROR).send({
+    .catch(() => res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server",
-      }),
-    );
-};
+      }));
 
 // Get clothing item by ID
 const getClothingItem = (req, res) => {
@@ -44,7 +40,7 @@ const getClothingItem = (req, res) => {
   if (!mongoose.isValidObjectId(id)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
   }
-  ClothingItem.findById(id)
+  return ClothingItem.findById(id)
     .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
     .catch((err) => {
@@ -63,7 +59,7 @@ const likeItem = (req, res) => {
   if (!mongoose.isValidObjectId(itemId)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
   }
-  ClothingItem.findByIdAndUpdate(
+  return ClothingItem.findByIdAndUpdate(
     itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
@@ -86,7 +82,7 @@ const dislikeItem = (req, res) => {
   if (!mongoose.isValidObjectId(itemId)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
   }
-  ClothingItem.findByIdAndUpdate(
+  return ClothingItem.findByIdAndUpdate(
     itemId,
     { $pull: { likes: req.user._id } },
     { new: true },
@@ -109,7 +105,7 @@ const deleteClothingItem = (req, res) => {
   if (!mongoose.isValidObjectId(itemId)) {
     return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
   }
-  ClothingItem.findById(itemId)
+  return ClothingItem.findById(itemId)
     .orFail(() => new Error("ItemNotFound"))
     .then((item) => {
       if (item.owner.toString() !== req.user._id) {
@@ -117,9 +113,7 @@ const deleteClothingItem = (req, res) => {
           .status(FORBIDDEN)
           .send({ message: "You are not authorized to delete this item" });
       }
-      return ClothingItem.findByIdAndDelete(itemId).then(() =>
-        res.status(200).send({ message: "Item deleted" }),
-      );
+      return ClothingItem.findByIdAndDelete(itemId).then(() => res.status(200).send({ message: "Item deleted" }));
     })
     .catch((err) => {
       if (err.message === "ItemNotFound") {
