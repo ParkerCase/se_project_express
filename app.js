@@ -4,15 +4,20 @@ const cors = require("cors");
 
 const routes = require("./routes"); // Use index.js in routes folder for routing
 const { NOT_FOUND } = require("./utils/errors");
+const { MONGODB_URI, PORT } = require("./config"); // Import config variables
 
 const app = express();
-const { PORT = 3001 } = process.env;
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
 
 // Use CORS
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+  }),
+);
 
 // Remove middleware for hardcoding user ID as authorization will handle this
 
@@ -26,7 +31,7 @@ app.use((req, res) => {
 
 // MongoDB connection
 mongoose
-  .connect("mongodb://127.0.0.1:27017/wtwr_db")
+  .connect(MONGODB_URI)
   .then(() => {
     if (process.env.NODE_ENV !== "production") {
       console.log("Connected to MongoDB");
