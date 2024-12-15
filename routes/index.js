@@ -7,6 +7,10 @@ const { createUser, login } = require("../controllers/users"); // Import the sig
 
 const router = express.Router();
 
+router.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
 // Routes for signing up and signing in (no /users prefix)
 router.post("/signup", createUser);
 router.post("/signin", login);

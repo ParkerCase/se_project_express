@@ -4,7 +4,7 @@ const cors = require("cors");
 
 const routes = require("./routes"); // Use index.js in routes folder for routing
 const { NOT_FOUND } = require("./utils/errors");
-const { MONGODB_URI, PORT } = require("./config"); // Import config variables
+const { MONGODB_URI, PORT } = require("./utils/config"); // Import config variables
 
 const app = express();
 
