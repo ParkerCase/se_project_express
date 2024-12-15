@@ -28,6 +28,13 @@ The application includes:
 - Validator: Package for validating URLs and other fields
 
 
+## Setting up the backend
+- Clone the backend repository: git clone https://github.com/ParkerCase/se_project_express.git
+- Follow the instructions in the backend's README.md to start the server.
+
+Ensure the backend server runs on a different port (e.g., http://localhost:3001).
+
+
 ## Running the Project**
 `npm run start` — to launch the server in production mode 
 
@@ -38,6 +45,7 @@ The application includes:
 ## Repository
 You can find the backend repository here: 
 - https://github.com/ParkerCase/se_project_express
+
 
 
 ### Testing
