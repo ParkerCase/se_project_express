@@ -28,7 +28,7 @@ The application includes:
 - Validator: Package for validating URLs and other fields
 
 
-## Running the Project
+## Running the Project**
 `npm run start` — to launch the server in production mode 
 
 `npm run dev` — to launch the server with the hot reload feature
