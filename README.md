@@ -1,30 +1,44 @@
 # WTWR (What to Wear?): Back End
 **Project Description**
-The WTWR project is a back-end server built using Node.js and Express. This server manages user data and clothing items, providing an API for a frontend application where users can add clothing items based on the weather and then like or dislike those clothing items. The application includes full CRUD operations, user authentication, and MongoDB integration for data persistence.
+The WTWR project is a back-end server built using Node.js and Express. This server manages user data and clothing items, providing an API for a frontend application where users can add clothing items based on the weather and then like or dislike those clothing items.
+
+The application includes:
+
+- Full CRUD operations
+- User authentication
+- MongoDB integration for data persistence
 
 **This servers API functionality handles:**
 
-- User management (create, fetch, update users)
-- Clothing item management (add, fetch, delete items)
-- Like and dislike functionality for clothing items
-- Error handling when an invalid request is made
-- Authorization implementation
+- User Management: Create, fetch, and update users
+- Clothing Item Management: Add, fetch, and delete clothing items
+- Like/Dislike Functionality: Enable users to like or dislike clothing items
+- Error Handling: Handle invalid requests gracefully
+- Authorization: Secure access to API routes
 
 **The technologies used in this project are:**
 
-- Node.js: A JavaScript runtime environment
+- Node.js: JavaScript runtime environment
 - Express.js: Framework for building web applications
-- MongoDB: Database that I am using to store user and clothing item data
-- Mongoose: Object Database Management library for MongoDB
-- ESLint: JavaScript linter with the Airbnb style guide
+- MongoDB: Database for storing user and clothing item data
+- Mongoose: ODM library for MongoDB
+- ESLint: JavaScript linter using the Airbnb style guide
 - Prettier: Code formatting tool
 - Nodemon: Hot reload during development
 - Validator: Package for validating URLs and other fields
 
+
 ## Running the Project
-`npm run start` — to launch the server 
+`npm run start` — to launch the server in production mode 
 
 `npm run dev` — to launch the server with the hot reload feature
+
+`npx nodemon app.js` - to start the server with Nodemon directly
+
+## Repository
+You can find the backend repository here: 
+- https://github.com/ParkerCase/se_project_express
+
 
 ### Testing
 Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
